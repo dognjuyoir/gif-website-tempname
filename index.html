@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" href="index.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gif Stash</title>
+</head>
+<body>
+    <h1>not ideal gif gallery</h1>
+    <input type="text" id="search" placeholder="Search gifs by name...">
+    <div id="status">Loading gifs...</div>
+    <div class="grid" id="grid"></div>
+
+    <script>
+        const GITHUB_REPO = "gif-website-tempname";
+        const BRANCH = "main";
+        const FOLDER = "gifs";
+
+        const apiUrl = `https://api.github.com/repos/dognjuyoir/${GITHUB_REPO}/contents/${FOLDER}?ref=${BRANCH}`;
+
+        const grid = document.getElementById("grid");
+        const status = document.getElementById("status");
+        const search = document.getElementById("search");
+
+        let allGifs = [];
+
+        function rawUrl(filename) {
+            return `https://raw.githubusercontent.com/dognjuyoir/${GITHUB_REPO}/${BRANCH}/${FOLDER}/${filename}`;
+        }
+
+        function render(list) {
+            grid.innerHTML = "";
+            if (list.length === 0) {
+            status.textContent = "No gifs match your search.";
+            return;
+            }
+            status.textContent = `${list.length} gif${list.length === 1 ? "" : "s"}`;
+            list.forEach(name => {
+            const url = rawUrl(name);
+            const card = document.createElement("div");
+            card.className = "card";
+            card.innerHTML = `
+                <img src="${url}" loading="lazy" alt="${name}">
+                <div class="name">${name}</div>
+                <button data-url="${url}">Copy link</button>
+            `;
+            grid.appendChild(card);
+            });
+
+            // wire up copy buttons
+            grid.querySelectorAll("button").forEach(btn => {
+            btn.addEventListener("click", () => {
+                navigator.clipboard.writeText(btn.dataset.url);
+                btn.textContent = "Copied!";
+                setTimeout(() => (btn.textContent = "Copy link"), 1000);
+            });
+            });
+        }
+
+        search.addEventListener("input", () => {
+            const q = search.value.toLowerCase();
+            render(allGifs.filter(name => name.toLowerCase().includes(q)));
+        });
+
+        fetch(apiUrl)
+            .then(res => {
+            if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+            return res.json();
+            })
+            .then(data => {
+            allGifs = data
+                .filter(item => item.type === "file" && item.name.toLowerCase().endsWith(".gif"))
+                .map(item => item.name)
+                .sort();
+            render(allGifs);
+            })
+            .catch(err => {
+            status.textContent = "Couldn't load gifs — check the console for details.";
+            console.error(err);
+            });
+    </script>
+</body>
+</html>
