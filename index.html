@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="index.css">
+    <link rel="stylesheet" href="style.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gif Stash</title>
+    <title>not ideal gifs</title>
 </head>
 <body>
     <h1>not ideal gif gallery</h1>
     <input type="text" id="search" placeholder="Search gifs by name...">
     <div id="status">Loading gifs...</div>
+    <div id="toast"></div>
     <div class="grid" id="grid"></div>
 
     <script>
@@ -25,8 +26,22 @@
 
         let allGifs = [];
 
-        function rawUrl(filename) {
-            return `https://raw.githubusercontent.com/dognjuyoir/${GITHUB_REPO}/${BRANCH}/${FOLDER}/${filename}`;
+        function displayName(filename) {
+            return filename.replace(/\.gif$/i, "").replace(/-/g, " ");
+        }
+
+        function gifUrl(filename) {
+            return `https://dognjuyoir.github.io/${GITHUB_REPO}/gifs/${filename}`;
+        }
+
+        const toast = document.getElementById("toast");
+        let toastTimeout;
+
+        function showToast(message) {
+            clearTimeout(toastTimeout);
+            toast.textContent = message;
+            toast.classList.add("show");
+            toastTimeout = setTimeout(() => toast.classList.remove("show"), 1200);
         }
 
         function render(list) {
@@ -37,24 +52,18 @@
             }
             status.textContent = `${list.length} gif${list.length === 1 ? "" : "s"}`;
             list.forEach(name => {
-            const url = rawUrl(name);
+            const url = gifUrl(name);
             const card = document.createElement("div");
             card.className = "card";
             card.innerHTML = `
                 <img src="${url}" loading="lazy" alt="${name}">
-                <div class="name">${name}</div>
-                <button data-url="${url}">Copy link</button>
-            `;
+                <div class="name">${displayName(name)}</div>
+                `;
+            card.addEventListener("click", () => {
+                navigator.clipboard.writeText(url);
+                showToast(`Copied "${displayName(name)}"!`);
+            });
             grid.appendChild(card);
-            });
-
-            // wire up copy buttons
-            grid.querySelectorAll("button").forEach(btn => {
-            btn.addEventListener("click", () => {
-                navigator.clipboard.writeText(btn.dataset.url);
-                btn.textContent = "Copied!";
-                setTimeout(() => (btn.textContent = "Copy link"), 1000);
-            });
             });
         }
 
