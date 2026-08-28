@@ -69,7 +69,7 @@
 
         search.addEventListener("input", () => {
             const q = search.value.toLowerCase();
-            render(allGifs.filter(name => name.toLowerCase().includes(q)));
+            render(allGifs.filter(name => displayName(name).toLowerCase().includes(q)));
         });
 
         fetch(apiUrl)
