@@ -27,10 +27,14 @@ h1 {
   background: #2b2d31;
   color: #fff;
 }
-#tagFilters {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem;
+#tagFilter {
+  padding: 0.6rem 0.8rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: 1px solid #444;
+  background: #2b2d31;
+  color: #fff;
+  cursor: pointer;
 }
 #status {
   color: #999;

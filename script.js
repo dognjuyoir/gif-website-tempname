@@ -55,36 +55,30 @@ function render(list) {
     grid.appendChild(card);
     });
 }
-
-let activeTag = null;
+const tagFilter = document.getElementById("tagFilter");
 
 function renderTagFilters() {
-    const allTags = [...new Set(Object.values(TAGS).flat())].sort();
-    const bar = document.getElementById("tagFilters");
-    bar.innerHTML = "";
-    allTags.forEach(tag => {
-        const btn = document.createElement("button");
-        btn.className = "tag-btn" + (tag === activeTag ? " active" : "");
-        btn.textContent = tag;
-        btn.addEventListener("click", () => {
-        activeTag = activeTag === tag ? null : tag;
-        renderTagFilters();
-        applyFilters();
-        });
-        bar.appendChild(btn);
-    });
+  const allTags = [...new Set(Object.values(TAGS).flat())].sort();
+  tagFilter.innerHTML = `<option value="">All tags</option>`;
+  allTags.forEach(tag => {
+    const opt = document.createElement("option");
+    opt.value = tag;
+    opt.textContent = tag;
+    tagFilter.appendChild(opt);
+  });
 }
 
 function applyFilters() {
     const q = search.value.toLowerCase();
     const filtered = allGifs.filter(name => {
         const matchesSearch = displayName(name).toLowerCase().includes(q);
-        const matchesTag = !activeTag || getTags(name).includes(activeTag);
+        const matchesTag = !tagFilter.value || getTags(name).includes(tagFilter.value);
         return matchesSearch && matchesTag;
     });
     render(filtered);
 }
 search.addEventListener("input", applyFilters);
+tagFilter.addEventListener("change", applyFilters);
 
 Promise.all([
 fetch(apiUrl).then(res => {
