@@ -59,7 +59,7 @@ const tagFilter = document.getElementById("tagFilter");
 
 function renderTagFilters() {
   const allTags = [...new Set(Object.values(TAGS).flat())].sort();
-  tagFilter.innerHTML = `<option value="">All tags</option>`;
+  tagFilter.innerHTML = `<option value="">All</option>`;
   allTags.forEach(tag => {
     const opt = document.createElement("option");
     opt.value = tag;
