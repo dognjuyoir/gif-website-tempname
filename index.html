@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
     <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>not ideal gifs</title>
 </head>
 <body>
     <h1>not ideal gif gallery</h1>
-    <input type="text" id="search" placeholder="Search gifs by name...">
+    <div id="controls">
+        <input type="text" id="search" placeholder="Search gifs by name...">
+        <div id="tagFilters"></div>
+    </div>
     <div id="status">Loading gifs...</div>
     <div id="toast"></div>
     <div class="grid" id="grid"></div>
@@ -25,6 +29,7 @@
         const search = document.getElementById("search");
 
         let allGifs = [];
+        let TAGS = {};
 
         function displayName(filename) {
             return filename.replace(/\.gif$/i, "").replace(/-/g, " ");
@@ -67,27 +72,56 @@
             });
         }
 
-        search.addEventListener("input", () => {
-            const q = search.value.toLowerCase();
-            render(allGifs.filter(name => displayName(name).toLowerCase().includes(q)));
-        });
+        let activeTag = null;
 
-        fetch(apiUrl)
-            .then(res => {
+        function renderTagFilters() {
+            const allTags = [...new Set(Object.values(TAGS).flat())].sort();
+            const bar = document.getElementById("tagFilters");
+            bar.innerHTML = "";
+            allTags.forEach(tag => {
+                const btn = document.createElement("button");
+                btn.className = "tag-btn" + (tag === activeTag ? " active" : "");
+                btn.textContent = tag;
+                btn.addEventListener("click", () => {
+                activeTag = activeTag === tag ? null : tag;
+                renderTagFilters();
+                applyFilters();
+                });
+                bar.appendChild(btn);
+            });
+        }
+
+        function applyFilters() {
+            const q = search.value.toLowerCase();
+            const filtered = allGifs.filter(name => {
+                const matchesSearch = displayName(name).toLowerCase().includes(q);
+                const matchesTag = !activeTag || getTags(name).includes(activeTag);
+                return matchesSearch && matchesTag;
+            });
+            render(filtered);
+        }
+        search.addEventListener("input", applyFilters);
+
+        Promise.all([
+        fetch(apiUrl).then(res => {
             if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
             return res.json();
-            })
-            .then(data => {
+        }),
+        fetch("gif-tags.json").then(res => res.ok ? res.json() : {})
+        ])
+        .then(([data, tagsData]) => {
+            TAGS = tagsData;
             allGifs = data
-                .filter(item => item.type === "file" && item.name.toLowerCase().endsWith(".gif"))
-                .map(item => item.name)
-                .sort();
+            .filter(item => item.type === "file" && item.name.toLowerCase().endsWith(".gif"))
+            .map(item => item.name)
+            .sort();
             render(allGifs);
-            })
-            .catch(err => {
+            renderTagFilters();
+        })
+        .catch(err => {
             status.textContent = "Couldn't load gifs — check the console for details.";
             console.error(err);
-            });
+        });
     </script>
 </body>
 </html>
