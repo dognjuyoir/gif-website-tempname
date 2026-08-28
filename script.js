@@ -99,4 +99,4 @@ fetch("gif-tags.json").then(res => res.ok ? res.json() : {})
 .catch(err => {
     status.textContent = "Couldn't load gifs — check the console for details.";
     console.error(err);
-});z
+});
