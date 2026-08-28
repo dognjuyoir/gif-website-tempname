@@ -11,6 +11,10 @@ const search = document.getElementById("search");
 let allGifs = [];
 let TAGS = {};
 
+function getTags(filename) {
+  return TAGS[filename] || [];
+}
+
 function displayName(filename) {
     return filename.replace(/\.gif$/i, "").replace(/-/g, " ");
 }
