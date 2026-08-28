@@ -11,6 +11,9 @@ const search = document.getElementById("search");
 let allGifs = [];
 let TAGS = {};
 
+const toTitleCase = str => 
+  str.toLowerCase().replace(/\b\w/g, char => char.toUpperCase());
+
 function getTags(filename) {
   return TAGS[filename] || [];
 }
@@ -63,7 +66,7 @@ function renderTagFilters() {
   allTags.forEach(tag => {
     const opt = document.createElement("option");
     opt.value = tag;
-    opt.textContent = tag;
+    opt.textContent = toTitleCase(tag);
     tagFilter.appendChild(opt);
   });
 }
